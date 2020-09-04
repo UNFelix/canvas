@@ -7,6 +7,15 @@ canvas.width = innerWidth;
 canvas.height = innerHeight - 4;
 // canvas.onclick = (e) => console.log(e.layerX, e.layerY);
 canvas.onclick = (e) => fillCircle(e.layerX, e.layerY, count++, true);
+canvas.onmousedown = (e) => {
+  canvas.onmousemove = (e) => fillCircle(e.layerX, e.layerY, count++, true);
+  canvas.onmouseup = (e) => {
+    canvas.onmousemove = null;
+    canvas.onmouseup = null;
+  };
+};
+
+setInterval(() => (count ? (count *= 0.85) : 0), 40);
 
 function fillTriangle(x1, y1, x2, y2, x3, y3, defaultColor) {
   ctx.beginPath();
