@@ -1,13 +1,28 @@
 // const canvas = document.getElementById("canvas");
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
+const coords = [];
 let count = 1;
 document.body.append(canvas);
 canvas.width = innerWidth;
 canvas.height = innerHeight - 4;
+
 // canvas.onclick = (e) => console.log(e.layerX, e.layerY);
-canvas.onclick = (e) => fillCircle(e.layerX, e.layerY, count++, true);
+
+canvas.onclick = (e) => {
+  fillCircle(e.layerX, e.layerY, count++, true);
+  coords.push(e.layerX, e.layerY);
+};
+
+document.body.onkeydown = (e) => {
+  if (e.key == "Enter") {
+    fillPolygon(...coords);
+    coords.length = 0;
+  }
+};
+
 canvas.onmousedown = (e) => {
+  if (!e.altKey) return;
   canvas.onmousemove = (e) => fillCircle(e.layerX, e.layerY, count++, true);
   canvas.onmouseup = (e) => {
     canvas.onmousemove = null;
@@ -33,4 +48,23 @@ function fillCircle(x, y, r, defaultColor) {
   if (!defaultColor) ctx.fillStyle = prompt("type a color", ctx.fillStyle);
   ctx.fill();
   ctx.closePath();
+}
+
+function fillPolygon(...coords) {
+  if (coords.length < 6) {
+    console.error("minimum 3 points coordinates required");
+  } else if (coords.length % 2) {
+    console.error("type even number of coordinates");
+  } else {
+    ctx.beginPath();
+    for (let i = 0; i < coords.length; i += 2) {
+      ctx.lineTo(coords[i], coords[i + 1]);
+    }
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+function rndNumber(max) {
+  return Math.floor(Math.random() * max);
 }
