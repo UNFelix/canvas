@@ -2,6 +2,16 @@
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 const coords = [];
+const shiftDirections = [
+  [1, 1],
+  [1, 0],
+  [1, -1],
+  [0, -1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, 1],
+];
 let count = 1;
 document.body.append(canvas);
 canvas.width = innerWidth;
@@ -14,12 +24,19 @@ canvas.onclick = (e) => {
   coords.push(e.layerX, e.layerY);
 };
 
-document.body.onkeydown = (e) => {
+const startFill = (document.body.onkeydown = (e) => {
   if (e.key == "Enter") {
     fillPolygon(...coords);
+    const timer = floatPolygon([...coords]);
     coords.length = 0;
+    // document.body.onkeydown = (e) => {
+    //   if (e.key == "Enter") {
+    //     clearInterval(timer);
+    //     document.body.onkeydown = startFill;
+    //   }
+    // };
   }
-};
+});
 
 canvas.onmousedown = (e) => {
   if (!e.altKey) return;
@@ -62,6 +79,29 @@ function fillPolygon(...coords) {
     }
     ctx.fill();
     ctx.closePath();
+  }
+}
+
+function floatPolygon(coords) {
+  if (coords.length < 6) {
+    console.error("minimum 3 points coordinates required");
+  } else if (coords.length % 2) {
+    console.error("type even number of coordinates");
+  } else {
+    const shiftCoords = [];
+    for (let i = 0; i < coords.length; i += 2) {
+      shiftCoords.push(...shiftDirections[rndNumber(8)]);
+    }
+    let color = rndNumber(360);
+    return setInterval(() => {
+      for (let i = 0; i < coords.length; i++) {
+        coords[i] += shiftCoords[i] * 3;
+      }
+      // ctx.clearRect(0, 0, canvas.width, canvas.height);
+      color += 10;
+      ctx.fillStyle = `hsl(${color} 70% 60%)`;
+      fillPolygon(...coords);
+    }, 100);
   }
 }
 
