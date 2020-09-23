@@ -2,6 +2,7 @@
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 const coords = [];
+const floatingPolygons = [];
 const shiftDirections = [
   [1, 1],
   [1, 0],
@@ -26,7 +27,7 @@ canvas.onclick = (e) => {
 
 const startFill = (document.body.onkeydown = (e) => {
   if (e.key == "Enter") {
-    fillPolygon(...coords);
+    // fillPolygon(...coords);
     const timer = floatPolygon([...coords]);
     coords.length = 0;
     // document.body.onkeydown = (e) => {
@@ -92,16 +93,42 @@ function floatPolygon(coords) {
     for (let i = 0; i < coords.length; i += 2) {
       shiftCoords.push(...shiftDirections[rndNumber(8)]);
     }
-    let color = rndNumber(360);
-    return setInterval(() => {
+
+    const polygon = { coords, color: rndNumber(360), life: 100 };
+    floatingPolygons.push(polygon);
+
+    drawFloatingPolygons(true);
+
+    const timer = setInterval(() => {
       for (let i = 0; i < coords.length; i++) {
-        coords[i] += shiftCoords[i] * 3;
+        coords[i] += shiftCoords[i] * 1;
       }
       // ctx.clearRect(0, 0, canvas.width, canvas.height);
-      color += 10;
-      ctx.fillStyle = `hsl(${color} 70% 60%)`;
-      fillPolygon(...coords);
+      polygon.color += 3;
+      polygon.life -= 0.25;
+      if (!polygon.life) {
+        clearInterval(timer);
+        floatingPolygons.splice(floatingPolygons.indexOf(polygon), 1);
+      }
     }, 100);
+
+    return timer;
+  }
+}
+
+function drawFloatingPolygons(start) {
+  if (start && !drawFloatingPolygons.timer) {
+    drawFloatingPolygons.timer = setInterval(() => {
+      floatingPolygons.forEach((polygon) => {
+        ctx.fillStyle = `hsl(${polygon.color}, 70%, ${
+          100 - polygon.life / 2
+        }%, ${polygon.life / (200 - polygon.life) / 2})`;
+        fillPolygon(...polygon.coords);
+      });
+    }, 100);
+  } else if (!start && drawFloatingPolygons.timer) {
+    clearInterval(drawFloatingPolygons.timer);
+    delete drawFloatingPolygons.timer;
   }
 }
 
